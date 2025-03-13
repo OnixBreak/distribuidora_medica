@@ -1,6 +1,6 @@
 node_modules/
 env/
-chrome_profile/
+chrome_profile_3000/
 package-lock.json
 package.json
 App.exe
