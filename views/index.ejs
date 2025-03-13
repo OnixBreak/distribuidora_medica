@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+   <link rel="stylesheet" href="./resources/css/style.css">
+   <!--<link rel="stylesheet" href="../public/css/style.css">-->
+    <link rel="shortcut icon" href="./resources/img/logotipo.ico" type="image/x-icon">
+    <title>Distribuidora Médica Díaz</title>
+</head>
+<body>
+<!-- Botones para cambiar de sección -->
+ <div class="banner">
+<button onclick="showSection('crear-remision')">Crear Nota</button>
+<button onclick="showSection('registros_seccion')">Registros</button>
+<button onclick="showSection('clientes')">Clientes</button>
+<button id="cerrar_sesion">Cerrar Sesión</button>
+</div>
+<!-- Sección para crear nota -->
+<div id="crear-remision" class="content active">
+    <img id="logo" src="../resources/img/logo_pdf.jpg" style="display: none;" />
+    <img class="img_index" src="./resources/img/Logo-texto.png" alt="logotipo de la empresa">
+    <form id="remision-form">
+        
+
+        <label for="cliente">Cliente:</label>
+        <select id="cliente" required class="select">
+        </select>
+        <p id="direccion_cliente"></p>
+        <p id="fecha_actual"></p>
+        <p>Folio: </p>
+        <p id="folio_generar">Cargando folio...</p>
+        <table id="detalles">
+            <thead>
+                <tr>
+                    <th>Cantidad</th>
+                    <th>Descripción</th>
+                    <th>Precio Unitario</th>
+                    <th>Subtotal</th>
+                    <th>Quitar</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input id="cantidad" type="number" class="cantidad" oninput="calcularSubtotal(this)" required autofocus></td>
+                    <p class="warnings" id="error_cantidad">En cantidad y precio ingresa solo números!</p>
+                    <td><input id="descript" type="text" class="descripcion" required autocomplete="off"></td>
+                    <td><input id="precio" type="number" class="precio_unitario" oninput="calcularSubtotal(this)" required></td>
+                    <td><input type="text" class="subtotal" step="0.01" required readonly></td>
+                    <td><button type="button" onclick="eliminarFila(this)">❌</button></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button class=" btn btn-add" type="button" onclick="agregarFila()">Agregar Fila</button>
+
+        <label for="total">Total:</label>
+        <input type="text" id="total" readonly>
+        <button class="btn btn-preview btn-add " type="button" onclick="mostrarVistaPrevia()">Vista Previa</button>
+<button id="generar_pdf" class="btn btn-pdf btn-save " type="button">Generar PDF</button>
+
+<!-- Aquí se mostrará la vista previa antes de generar el PDF -->
+<div id="vista-previa" style="display:none; border:1px solid #ccc; padding:10px; margin-top:10px;">
+    <h2>Vista Previa de la Nota</h2>
+    <p id="vista-fecha"></p>
+    <p id="vista-folio"></p>
+    <p id="vista-cliente"></p>
+    <p id="vista-domicilio"></p>
+    <table id="vista-tabla" width="100%">
+        <thead>
+            <tr>
+                <th>Cantidad</th>
+                <th>Descripción</th>
+                <th>Precio Unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <p id="vista-total"></p>
+</div>
+    </form>
+</div>
+
+<!-- Sección para historial -->
+<div id="registros_seccion" class="content">
+    <img class="img_index" src="./resources/img/Logo-texto.png" alt="">
+    <h2>Historial de Notas</h2>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Venta</th>
+                <th>Nombre del archivo</th>
+            </tr>
+        </thead>
+        <tbody id="tablaRegistros">
+        </tbody>
+    </table>
+</div>
+
+<!-- Sección para clientes -->
+<div id="clientes" class="content">
+    <img class="img_index" src="./resources/img/Logo-texto.png" alt="">
+    <h2>Clientes</h2>
+    
+    <form id="cliente-form">
+        <label for="nombre-cliente">Nombre:</label>
+        <input type="text" id="nombre-cliente" required autocomplete="off">
+        <label for="direccion">Dirección</label>
+        <input type="text" id="direccion" autocomplete="off">
+        <button class="btn btn-add" type="submit">Agregar Cliente</button>
+    </form>
+
+    <h3>Lista de Clientes</h3>
+    <table id="clientes-table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>QUITAR</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<script src="../resources/js/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</body>
+</html>

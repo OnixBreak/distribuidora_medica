@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./resources/css/style.css">
+    <link rel="shortcut icon" href="./resources/img/logotipo.ico" type="image/x-icon">
+    <title>Iniciar Sesión</title>
+</head>
+<header></header>
+<body>
+    <div class="login">
+        <img src="./resources/img/Logo-texto.png" alt="Distribuidora Médica Díaz">
+        <form action="/auth" method="POST" id="form_login">
+            <input type="text" name="user" placeholder="Usuario" id="username">
+            <span class="warnings" id="mensaje_user">Ingresa un usuario valido!</span>
+            <input type="password" name="password" placeholder="Contraseña" id="password">
+            <span class="warnings" id="msg_pass">Ingresa una constraseña valida!</span>
+            <input type="submit" value="Ingresar">
+            <div id="mensaje-error" style="display: none; color: red; margin-top: 10px;"></div>
+        </form>
+    </div>
+        <footer>
+            <span class="footer">Powered by Onix Burnedead</span>
+        </footer>
+        <script src="../resources/js/validacion.js"></script>
+</body>
+</html>
