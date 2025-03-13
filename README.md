@@ -1,3 +1,3 @@
 # distribuidora_medica
-# npm install cors
-# npm install  pdfkit
+# primer commit
+# agregando el .gitignore
