@@ -241,6 +241,12 @@ label {
   font-weight: bold;
   margin-top: 10px;
 }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 
 input {
   width: 100%;
@@ -273,14 +279,31 @@ th {
   margin-top: 10px;
   padding: 5px;
   color: #fff;
-  font-size: 12px;
+  font-size: 16px;
   border: none;
   cursor: pointer;
   border-radius: 2px;
-  transition: all 350ms;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 .btn-quit:hover {
   background-color: #721c24;
+  font-weight: bold;
+}
+.btn-actualizarCliente{
+  margin-top: 10px;
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+  background: #177e89;
+  color: white;
+  cursor: pointer;
+
+}
+.btn-actualizarCliente:hover{
+  background-color:#084c61;
   font-weight: bold;
 }
 
@@ -292,6 +315,9 @@ th {
   cursor: pointer;
   border-radius: 2px;
   transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+.edited {
+  background-color: #d4edda; /* Color verde claro cuando se guarda */
 }
 
 .btn-add {

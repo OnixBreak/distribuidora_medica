@@ -165,6 +165,7 @@ document
     }
     cargarClientes();
   });
+  
 
 async function cargarClientes() {
   try {
@@ -173,7 +174,7 @@ async function cargarClientes() {
       throw new Error(`Error en la solicitud: ${response.status}`);
 
     const data = await response.json();
-    console.log("Clientes recibidos:", data); // Depuración
+    //console.log("Clientes recibidos:", data); // Depuración
 
     const tbody = document.querySelector("#clientes-table tbody");
     tbody.innerHTML = ""; // Limpiar la tabla antes de insertar los nuevos datos
@@ -181,9 +182,11 @@ async function cargarClientes() {
     data.forEach((cliente) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-                <td>${cliente.nombre_cliente}</td>
-                <td>${cliente.domicilio_cliente}</td>
+                <td>${cliente.id_cliente}</td>
+                <td class="edit_cliente" id="nombre_cliente_${cliente.id_cliente}">${cliente.nombre_cliente}</td>
+                <td class="edit_cliente" id="direccion_cliente_${cliente.id_cliente}">${cliente.domicilio_cliente}</td>
                 <td><button class="btn-quit" onclick="eliminarCliente(${cliente.id_cliente})">QUITAR</button></td>
+                <td><button class="btn-actualizarCliente" data-id="${cliente.id_cliente}" onclick="actualizarCliente(event)">Actualizar</button></td>
             `;
       tbody.appendChild(tr);
     });
@@ -191,6 +194,100 @@ async function cargarClientes() {
     console.error("Error al cargar los clientes:", error);
   }
 }
+
+
+
+/*Actualizar clientes */
+async function actualizarCliente(event) {
+  // Obtener el id_cliente desde el atributo data-id del botón
+  const id_cliente = event.target.getAttribute("data-id");
+
+  // Obtener los valores de los campos de la fila correspondiente
+  const nombre_clienteAct = document.querySelector(`#nombre_cliente_${id_cliente}`).textContent;
+  const direccion_clienteAct = document.querySelector(`#direccion_cliente_${id_cliente}`).textContent;
+
+  // Validar que los campos no estén vacíos
+  if (!nombre_clienteAct || !direccion_clienteAct) {
+    console.log("Todos los campos son obligatorios.");
+    return;
+  }
+
+  // Hacer la solicitud PUT con los datos correctos
+  try {
+    const response = await fetch(`http://localhost:3000/api/actualizar-cliente/${id_cliente}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        nombre_clienteAct,
+        direccion_clienteAct
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error("Error al actualizar cliente");
+    }
+
+    const data = await response.json();
+    //console.log(data);  // Respuesta del servidor
+    //console.log("Cliente actualizado correctamente.");
+
+    // Si todo salió bien, puedes hacer algo como actualizar la tabla visualmente o mostrar un mensaje
+    Swal.fire({
+      title: "Éxito",
+      text: "Cliente actualizado con éxito",
+      icon: "success",
+      confirmButtonText: "Aceptar",
+    });
+    const row = event.target.closest('tr'); // Obtener la fila completa
+    const editableCells = row.querySelectorAll('.edit_cliente'); // Obtener las celdas editables
+
+    // Eliminar la clase 'edited' de las celdas editadas
+    editableCells.forEach(cell => {
+      cell.classList.remove('edited');  // Eliminar la clase 'edited'
+    });
+
+  } catch (error) {
+    console.error("Error al actualizar cliente:", error);
+    console.log("Ocurrió un error al actualizar el cliente.");
+  }
+}
+
+
+const tablaClientes = document.getElementById('clientes-table');
+  
+  // Función para convertir una celda en un input editable
+  function makeEditable(cell) {
+    const originalText = cell.textContent;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = originalText;
+    cell.textContent = '';
+    cell.appendChild(input);
+    input.focus();
+
+    // Al hacer clic afuera del input, guardar el cambio
+    input.addEventListener('blur', () => {
+      const newValue = input.value.trim();
+      if (newValue !== originalText) {
+        cell.textContent = newValue;
+        cell.classList.add('edited');  // Marca como editado con color verde
+      } else {
+        cell.textContent = originalText;  // Si no hubo cambio, mantener el valor original
+      }
+    });
+  }
+
+  // Evento para hacer editable una celda al hacer clic dentro de la tabla de clientes
+  tablaClientes.addEventListener('click', function(event) {
+    // Verificamos que el clic haya sido en una celda editable
+    const cell = event.target;
+    if (cell.classList.contains('edit_cliente')) {
+      makeEditable(cell);
+    }
+  });
+
 
 /*Eliminar clientes */
 
@@ -236,6 +333,7 @@ async function eliminarCliente(id) {
     }
 }
 
+
 /*Rellenando el select con los clientes existentes */
 
 async function cargarClientesEnSelect() {
@@ -245,7 +343,7 @@ async function cargarClientesEnSelect() {
       throw new Error(`Error en la solicitud: ${response.status}`);
 
     const data = await response.json();
-    console.log("Clientes recibidos:", data);
+    //console.log("Clientes recibidos:", data);
 
     const selectClientes = document.getElementById("cliente");
     selectClientes.innerHTML = '<option value="">Venta General</option>'; // Resetear opciones
