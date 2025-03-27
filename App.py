@@ -2,7 +2,7 @@ import subprocess
 import socket
 import time
 import os
-import psutil
+import shutil
 import requests
 
 CHROME_PATH = "C:/Program Files/Google/Chrome/Application/chrome.exe"
@@ -34,6 +34,32 @@ def open_chrome_app():
         f'--app={URL}',
         f'--user-data-dir={user_data_dir}'
     ])
+def copy_files():
+#carpeta de descargas
+    descargas = os.path.join(os.path.expanduser("~"), "Downloads")
+    destino = os.path.abspath("./public/pdfs/")
+
+    os.makedirs(destino, exist_ok=True)
+    archivos_copiados = 0
+
+    # Recorrer los archivos en Descargas y copiar los PDFs
+    for archivo in os.listdir(descargas):
+        if archivo.startswith('nota_') and archivo.endswith(".pdf"):  # Solo archivos PDF
+            ruta_origen = os.path.join(descargas, archivo)
+            ruta_destino = os.path.join(destino, archivo)
+        
+            shutil.move(ruta_origen, ruta_destino)
+            print(f"Reubicado: {archivo}")
+            archivos_copiados += 1
+
+    if archivos_copiados > 0:
+        print(f"¡Respaldo completado! {archivos_copiados} archivo(s) respaldado(s).")
+        
+    else:
+        print("No se encontraron archivos PDF para respaldar.")
+
+# Llamar a la función
+
 
 
 def main():
@@ -56,6 +82,7 @@ def main():
             if chrome_proc.poll() is not None:
                 print(f"Chrome cerrado. Código de salida: {chrome_proc.returncode}")
                 print("Chrome cerrado. Cerrando Node.js...")
+                copy_files()
                 if node_proc and node_proc.poll() is None:
                     node_proc.terminate()
                 break

@@ -503,7 +503,7 @@ async function generarPDF() {
   const dia = String(fecha.getDate()).padStart(2, "0");
   const mes = String(fecha.getMonth() + 1).padStart(2, "0"); // Los meses empiezan desde 0
   const año = fecha.getFullYear();
-  const fechaformateada = `${dia}/${mes}/${año}`;
+  const fechaformateada = `${dia}-${mes}-${año}`;
   //const fecha = new Date().toISOString().split('T')[0];
   const cliente = document.getElementById("cliente").selectedOptions[0].text;
   const domicilio_pdf =
@@ -551,7 +551,7 @@ async function generarPDF() {
   // Parte 2: COPIA (150mm más abajo)
   imprimirBloque(150, "Copia -");
 
-  const pdfname = `nota_${folio}_${fecha}.pdf`;
+  const pdfname = `nota_${folio}_${fechaformateada}.pdf`;
   doc.save(pdfname);
 
   // Guardar en BD
@@ -597,7 +597,11 @@ async function cargarRegistros() {
                 <td>${registro.fecha_registro}</td>
                 <td>${registro.cliente_registro}</td>
                 <td>$ ${registro.total_registro}</td>
-                <td>${registro.pdf_respaldo}</td>
+                <td>
+                <a href="/resources/pdfs/${encodeURIComponent(registro.pdf_respaldo)}" target="_blank" rel="noopener noreferrer" type="application/pdf">
+                ${registro.pdf_respaldo}
+                </a>
+                </td>
             `;
 
       tablaBody.appendChild(fila);
