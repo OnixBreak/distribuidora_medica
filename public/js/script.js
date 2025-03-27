@@ -598,7 +598,7 @@ async function cargarRegistros() {
                 <td>${registro.cliente_registro}</td>
                 <td>$ ${registro.total_registro}</td>
                 <td>
-                <a href="/resources/pdfs/${encodeURIComponent(registro.pdf_respaldo)}" target="_blank" rel="noopener noreferrer" type="application/pdf">
+                <a class="a_respaldo" href="/resources/pdfs/${encodeURIComponent(registro.pdf_respaldo)}" target="_blank" rel="noopener noreferrer" type="application/pdf">
                 ${registro.pdf_respaldo}
                 </a>
                 </td>

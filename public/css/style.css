@@ -314,6 +314,11 @@ th {
   font-weight: bold;
 }
 
+.a_respaldo{
+  text-decoration: none;
+
+}
+
 .btn {
   margin-top: 10px;
   padding: 10px;
