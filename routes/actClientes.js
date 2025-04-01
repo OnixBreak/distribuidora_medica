@@ -24,7 +24,7 @@ router.put("/actualizar-cliente/:id_cliente", async (req, res) => {
             return res.status(404).json({ error: "Cliente no encontrado" });
         }
 
-        //res.json({ message: "Cliente actualizado correctamente" });
+        res.json({ message: "Cliente actualizado correctamente" });
 
     } catch (error) {
         console.error("Error al actualizar cliente:", error);

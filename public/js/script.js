@@ -203,12 +203,18 @@ async function actualizarCliente(event) {
   const id_cliente = event.target.getAttribute("data-id");
 
   // Obtener los valores de los campos de la fila correspondiente
-  const nombre_clienteAct = document.querySelector(`#nombre_cliente_${id_cliente}`).textContent;
-  const direccion_clienteAct = document.querySelector(`#direccion_cliente_${id_cliente}`).textContent;
+  const nombre_clienteAct = document.querySelector(`#nombre_cliente_${id_cliente}`).textContent.trim();
+  const direccion_clienteAct = document.querySelector(`#direccion_cliente_${id_cliente}`).textContent.trim();
 
   // Validar que los campos no estén vacíos
   if (!nombre_clienteAct || !direccion_clienteAct) {
     console.log("Todos los campos son obligatorios.");
+    Swal.fire({
+      title: "Error",
+      text: "Todos los campos son obligatorios",
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
     return;
   }
 
@@ -216,43 +222,46 @@ async function actualizarCliente(event) {
   try {
     const response = await fetch(`http://localhost:3000/api/actualizar-cliente/${id_cliente}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        nombre_clienteAct,
-        direccion_clienteAct
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nombre_clienteAct, direccion_clienteAct })
     });
+
+    console.log(`Respuesta del servidor: ${response.status}`);
 
     if (!response.ok) {
       throw new Error("Error al actualizar cliente");
     }
 
     const data = await response.json();
-    //console.log(data);  // Respuesta del servidor
-    //console.log("Cliente actualizado correctamente.");
+    console.log(data);  // Respuesta del servidor
 
-    // Si todo salió bien, puedes hacer algo como actualizar la tabla visualmente o mostrar un mensaje
+    // Mostrar mensaje de éxito
     Swal.fire({
       title: "Éxito",
       text: "Cliente actualizado con éxito",
       icon: "success",
       confirmButtonText: "Aceptar",
     });
-    const row = event.target.closest('tr'); // Obtener la fila completa
-    const editableCells = row.querySelectorAll('.edit_cliente'); // Obtener las celdas editables
 
-    // Eliminar la clase 'edited' de las celdas editadas
+    // Restablecer el color de las celdas editadas
+    const row = event.target.closest("tr"); 
+    const editableCells = row.querySelectorAll(".edit_cliente");
+
     editableCells.forEach(cell => {
-      cell.classList.remove('edited');  // Eliminar la clase 'edited'
+      cell.classList.remove("edited");  // Eliminar la clase 'edited'
     });
 
   } catch (error) {
     console.error("Error al actualizar cliente:", error);
-    console.log("Ocurrió un error al actualizar el cliente.");
+    Swal.fire({
+      title: "Error",
+      text: "Ocurrió un error al actualizar el cliente",
+      icon: "error",
+      confirmButtonText: "Aceptar",
+    });
   }
 }
+
 
 
 const tablaClientes = document.getElementById('clientes-table');
