@@ -47,6 +47,15 @@ function agregarFila() {
     `;
   tabla.appendChild(nuevaFila);
 }
+function resetearTabla() {
+  let tbody = document.getElementById("detalles").getElementsByTagName("tbody")[0];
+
+  // Eliminar todas las filas
+  tbody.innerHTML = "";
+
+  // Agregar una nueva fila vacía
+  agregarFila();
+}
 
 function eliminarFila(boton) {
   let fila = boton.closest("tr");
@@ -64,11 +73,30 @@ function eliminarFila(boton) {
 }
 
 function calcularSubtotal(input) {
-  let fila = input.closest("tr");
-  let cantidad = parseFloat(fila.querySelector(".cantidad").value) || 0;
-  let precio = parseFloat(fila.querySelector(".precio_unitario").value) || 0;
-  let subtotal = cantidad * precio;
-  fila.querySelector(".subtotal").value = subtotal.toFixed(2);
+  let fila = input.closest("tr"); // Obtiene la fila actual
+  let cantidad = fila.querySelector(".cantidad").value.trim();
+  let precio = fila.querySelector(".precio_unitario").value.trim();
+  let subtotalInput = fila.querySelector(".subtotal");
+
+  // Convertir valores a número
+  let cantidadNum = cantidad === "" ? 0 : Number(cantidad);
+  let precioNum = precio === "" ? 0 : Number(precio);
+
+  // Validar si son números válidos
+  if (isNaN(cantidadNum) || isNaN(precioNum) || cantidadNum < 0 || precioNum < 0) {
+    subtotalInput.value = "";
+    input.style.color = "red";
+    console.error("Campos inválidos.");
+    return;
+  }
+
+  // Calcular subtotal solo si ambos valores son válidos
+  if (cantidadNum > 0 && precioNum > 0) {
+    subtotalInput.value = (cantidadNum * precioNum).toFixed(2);
+    input.style.color = "black"; // Restaurar color
+  } else {
+    subtotalInput.value = ""; // Si falta un valor, no calcular
+  }
   calcularTotal();
 }
 
@@ -419,10 +447,10 @@ function mostrarVistaPrevia() {
   tablaVista.innerHTML = "";
 
   tablaOriginal.querySelectorAll("tr").forEach((tr) => {
-    const cantidad = tr.querySelector(".cantidad").value;
-    const descripcion = tr.querySelector(".descripcion").value;
-    const precioUnitario = tr.querySelector(".precio_unitario").value;
-    const subtotal = tr.querySelector(".subtotal").value;
+    const cantidad = tr.querySelector(".cantidad").value.trim();
+    const descripcion = tr.querySelector(".descripcion").value.trim();
+    const precioUnitario = tr.querySelector(".precio_unitario").value.trim();
+    const subtotal = tr.querySelector(".subtotal").value.trim();
 
     const nuevaFila = document.createElement("tr");
     nuevaFila.innerHTML = `
@@ -472,7 +500,7 @@ document.getElementById("generar_pdf").addEventListener("click", async () => {
 
 // Función reutilizable para validar campos
 function validarCampo(input, expresion, errorElement) {
-  if (expresion.test(input.value)) {
+  if (expresion.test(input.value.trim())) {
     input.style.color = "#000";
     errorElement.style.display = "none";
     return true;
@@ -484,19 +512,20 @@ function validarCampo(input, expresion, errorElement) {
 }
 
 /*Generar el pdf */
-
 async function generarPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // Esperar a que cargue la imagen
+  // Cargar imágenes
   const imgElement = document.getElementById("logo");
-  if (!imgElement.complete) {
-    await new Promise((resolve) => {
-      imgElement.onload = resolve;
-    });
-  }
+  const imgWatermark = document.getElementById("watermark");
 
+  await Promise.all([
+    new Promise((resolve) => imgElement.complete ? resolve() : imgElement.onload = resolve),
+    new Promise((resolve) => imgWatermark.complete ? resolve() : imgWatermark.onload = resolve)
+  ]);
+
+  // Convertir imagen de logo a base64
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   canvas.width = imgElement.naturalWidth;
@@ -504,19 +533,42 @@ async function generarPDF() {
   ctx.drawImage(imgElement, 0, 0);
   const imgData = canvas.toDataURL("image/jpeg");
 
+  // Función para rotar y hacer la marca de agua más opaca
+  function getWatermarkImage(image, angle) {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Ajustar tamaño del canvas para evitar recortes
+    const size = Math.max(image.naturalWidth, image.naturalHeight) * 1.5;
+    canvas.width = size;
+    canvas.height = size;
+
+    // Aplicar transparencia
+    ctx.globalAlpha = 0.1; // Opacidad de la marca de agua
+
+    // Rotar la imagen en el centro del canvas
+    ctx.translate(size / 2, size / 2);
+    ctx.rotate((angle * Math.PI) / 180);
+    ctx.drawImage(image, -image.naturalWidth / 2, -image.naturalHeight / 2);
+
+    return canvas.toDataURL("image/png");
+  }
+
+  // Obtener imagen de la marca de agua procesada
+  const watermarkData = getWatermarkImage(imgWatermark, -30);
+
+  // Insertar marca de agua centrada
+  doc.addImage(watermarkData, "PNG", 30, 80, 150, 150, "", "FAST");
+
   // Obtener datos
-  const folio = document
-    .getElementById("folio_generar")
-    .textContent.replace("Folio: ", "");
+  const folio = document.getElementById("folio_generar").textContent.replace("Folio: ", "");
   const fecha = new Date();
   const dia = String(fecha.getDate()).padStart(2, "0");
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0"); // Los meses empiezan desde 0
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
   const año = fecha.getFullYear();
   const fechaformateada = `${dia}-${mes}-${año}`;
-  //const fecha = new Date().toISOString().split('T')[0];
   const cliente = document.getElementById("cliente").selectedOptions[0].text;
-  const domicilio_pdf =
-    document.getElementById("direccion_cliente").textContent;
+  const domicilio_pdf = document.getElementById("direccion_cliente").textContent;
   const total = document.getElementById("total").value;
 
   // Obtener la tabla directamente desde #detalles
@@ -530,35 +582,40 @@ async function generarPDF() {
     }
   );
 
-  // FUNCION PARA IMPRIMIR UN BLOQUE (original o copia)
-  const imprimirBloque = (offsetY = 0, etiqueta = "") => {
-    doc.addImage(imgData, "JPEG", 10, 10 + offsetY, 40, 15);
+  // Función para imprimir los datos y tabla en el PDF
+  const imprimirBloque = () => {
+    doc.addImage(imgData, "JPEG", 10, 10, 40, 15);
     doc.setFontSize(12);
-    doc.text(`${etiqueta} Fecha: ${fechaformateada}`, 10, 30 + offsetY);
-    doc.text(`Folio: ${folio}`, 10, 35 + offsetY);
-    doc.text(`Cliente: ${cliente}`, 10, 40 + offsetY);
-    doc.text(`Dirección: ${domicilio_pdf}`, 10, 45 + offsetY);
+    doc.text(`Fecha: ${fechaformateada}`, 10, 30);
+    doc.text(`Folio: ${folio}`, 10, 35);
+    doc.text(`Cliente: ${cliente}`, 10, 40);
+    doc.text(`Dirección: ${domicilio_pdf}`, 10, 45);
 
+    // Generar tabla
     doc.autoTable({
-      startY: 50 + offsetY,
+      headStyles: {
+        fillColor: [0, 0, 0], // Fondo negro para encabezados
+        textColor: [255, 255, 255], // Texto blanco en encabezados
+      },
+      startY: 50,
       head: [["Cantidad", "Descripción", "Precio Unitario", "Subtotal"]],
       body: data,
     });
 
-    const yFinal = doc.lastAutoTable.finalY + 10;
-    doc.text(`Total: $${total}`, 10, yFinal);
-    doc.text(
-      "Tel: 222 434 2002 Correo: manolindiaz76@gmail.com",
-      10,
-      yFinal + 5
-    );
+    // Posicionar el total justo después de la tabla
+    const yFinalTabla = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(14);
+    doc.text(`Total: $${total}`, 10, yFinalTabla);
+
+    // Agregar el footer más grande
+    const pageHeight = doc.internal.pageSize.height;
+    const footerY = pageHeight - 15;
+    doc.setFontSize(12);
+    doc.text("Tel: 222 434 2002 | Correo: manolindiaz76@gmail.com", 10, footerY);
   };
 
-  // Parte 1: ORIGINAL
-  imprimirBloque(0, "Original -");
-
-  // Parte 2: COPIA (150mm más abajo)
-  imprimirBloque(150, "Copia -");
+  // Llamar a la función para imprimir el contenido en el PDF
+  imprimirBloque();
 
   const pdfname = `nota_${folio}_${fechaformateada}.pdf`;
   doc.save(pdfname);
@@ -575,6 +632,7 @@ async function generarPDF() {
     if (result.success) {
       console.log("Registro guardado con éxito");
       document.getElementById("remision-form").reset();
+      resetearTabla();
       cargarRegistros();
       obtenerFolio();
     } else {
@@ -585,11 +643,12 @@ async function generarPDF() {
   }
 }
 
+
+
+
 async function cargarRegistros() {
   try {
-    const response = await fetch(
-      "http://localhost:3000/api/consulta-registros"
-    );
+    const response = await fetch("http://localhost:3000/api/consulta-registros");
     if (!response.ok) throw new Error("Error al obtener los registros");
 
     const registros = await response.json(); // Convertimos la respuesta en JSON

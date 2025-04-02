@@ -6,7 +6,7 @@ const promise = conn.promise();
 
 router.get('/consulta-registros', async (req, res) => {
     try {
-        const [rows] = await promise.query('SELECT * FROM registros');
+        const [rows] = await promise.query('SELECT * FROM registros ORDER BY id_registros DESC');
         res.json(rows);
     } catch (error) {
         console.error('Error al obtener los clientes:', error);
