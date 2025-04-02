@@ -3,9 +3,15 @@ const router = express.Router();
 const db = require('../database/db'); // Asegúrate de que apunte a tu conexión con MySQL
 
 const promise = db.promise();
+
 // Ruta para eliminar un cliente por su ID
 router.delete('/eliminar-cliente/:id', async (req, res) => {
     const { id } = req.params;
+
+    // Validar que el ID sea un número
+    if (isNaN(id)) {
+        return res.status(400).json({ error: 'ID no válido' });
+    }
 
     try {
         const [result] = await promise.query('DELETE FROM clientes WHERE id_cliente = ?', [id]);
@@ -22,3 +28,4 @@ router.delete('/eliminar-cliente/:id', async (req, res) => {
 });
 
 module.exports = router;
+

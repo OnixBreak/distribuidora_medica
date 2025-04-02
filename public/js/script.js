@@ -329,20 +329,16 @@ const tablaClientes = document.getElementById('clientes-table');
 /*Eliminar clientes */
 
 async function eliminarCliente(id) {
-  const resp_delcliente = false;
-  Swal.fire({
+  const result = await Swal.fire({
     title: "¿Estás seguro?",
-    text: "¿Deseas Eliminar al cliente?",
+    text: "¿Deseas eliminar al cliente?",
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: "Eliminar",
     cancelButtonText: "Cancelar",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      resp_delcliente = true;
-    }
   });
-  if (resp_delcliente == true)
+
+  if (result.isConfirmed) {
     try {
       const response = await fetch(
         `http://localhost:3000/api/eliminar-cliente/${id}`,
@@ -354,8 +350,9 @@ async function eliminarCliente(id) {
       const data = await response.json();
       console.log(data);
 
-      if (!response.ok)
+      if (!response.ok) {
         throw new Error(data.error || "Error al eliminar el cliente");
+      }
 
       Swal.fire({
         title: "Éxito",
@@ -367,8 +364,16 @@ async function eliminarCliente(id) {
       cargarClientes(); // Recargar la tabla después de eliminar
     } catch (error) {
       console.error("Error al eliminar el cliente:", error);
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo eliminar el cliente",
+        icon: "error",
+        confirmButtonText: "Aceptar",
+      });
     }
+  }
 }
+
 
 
 /*Rellenando el select con los clientes existentes */
