@@ -21,6 +21,19 @@ CREATE TABLE registros(
   pdf_respaldo VARCHAR(255) NOT NULL,
 );
 
+//nueva tabla
+
+CREATE TABLE detalles_registro (
+  id_detalle INT AUTO_INCREMENT PRIMARY KEY,
+  id_registro INT NOT NULL,
+  cantidad INT NOT NULL,
+  descripcion VARCHAR(255) NOT NULL,
+  precio_unitario DECIMAL(10, 2) NOT NULL,
+  subtotal DECIMAL(10, 2) NOT NULL,
+  FOREIGN KEY (id_registro) REFERENCES registros(id_registros) ON DELETE CASCADE
+);
+
+
 
 //usuarios
 

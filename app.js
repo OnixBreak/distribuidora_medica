@@ -166,10 +166,15 @@ app.use("/api", foliosRoutes);
 
 
 const consultregistrosRoutes = require('./routes/consultRegistros');
-app.use('/api/', consultregistrosRoutes);
+app.use('/api', consultregistrosRoutes);
 
 const actClientRoutes = require('./routes/actClientes');
-app.use('/api', actClientRoutes)
+app.use('/api', actClientRoutes);
+
+
+const consultregistedit = require('./routes/consultRegistEdit');
+app.use('/api', consultregistedit);
+
 
 app.listen(3000, () => {
     console.log('Servidor corriendo en http://localhost:3000');

@@ -29,7 +29,7 @@
         <select id="cliente" required class="select">
         </select>
         <p id="direccion_cliente"></p>
-        <p id="fecha_actual"></p>
+        <input type="date" id="fecha_actual" class="input_fecha">
         <p>Folio: </p>
         <p id="folio_generar">Cargando folio...</p>
         <div class="tablas_div">
@@ -45,18 +45,18 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><input id="cantidad" type="number" class="cantidad" oninput="calcularSubtotal(this)" required autofocus></td>
+                    <td><input name="cantidad" id="cantidad" type="number" class="cantidad" oninput="calcularSubtotal(this)" required autofocus></td>
                     <p class="warnings" id="error_cantidad">En cantidad y precio ingresa solo números!</p>
                     <td><input id="descript" type="text" class="descripcion" required autocomplete="off"></td>
                     <td><input id="precio" type="number" class="precio_unitario" oninput="calcularSubtotal(this)" required></td>
-                    <td><input type="text" class="subtotal" step="0.01" required readonly></td>
+                    <td><input name="subtotal" type="text" class="subtotal" step="0.01" required readonly></td>
                     <td><button type="button" onclick="eliminarFila(this)">❌</button></td>
                 </tr>
             </tbody>
         </table>
         </div>
 
-        <button class=" btn btn-add" type="button" onclick="agregarFila()">Agregar Fila</button>
+        <button id="agregar_filabtn" class=" btn btn-add" type="button" onclick="agregarFila()">Agregar Fila</button>
 
         <label for="total">Total:</label>
         <input type="text" id="total" readonly>
@@ -92,6 +92,20 @@
 <div id="registros_seccion" class="content">
     <img class="img_index" src="./resources/img/Logo-texto.png" alt="">
     <h2>Historial de Notas</h2>
+        <div class="edit_registro">
+            <label for="folio_edit">Buscar Registro</label>
+            <input type="number" id="folio_edit" name="folio_edit" placeholder="Folio a buscar" >
+            <button id="btn_consultar_registro" class="btn btn-add" type="button">Consultar</button>
+            <section class="datos_edit">
+                <p id="edit-folio">Folio:</p>
+                <p id="edit-cliente">Cliente:</p>
+                <p id="edit-venta">Venta:</p>
+                <p id="edit-file" >Nombre del archivo:</p>
+                <button id="editar_registro" class="edit btn btn-save">Editar</button>
+
+            </section>
+
+        </div>
 <div class="tablas_div">
     <table>
         <thead>

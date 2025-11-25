@@ -1,3 +1,9 @@
+
+document.addEventListener("DOMContentLoaded", () => {
+  const primerPrecio = document.querySelector(".precio_unitario");
+  if (primerPrecio) activarEnterEnPrecio(primerPrecio);
+});
+
 function showSection(sectionId) {
   document
     .querySelectorAll(".content")
@@ -13,8 +19,14 @@ function showSection(sectionId) {
   }
   if (sectionId == "registros_seccion") {
     cargarRegistros();
+
   }
   if (sectionId == "crear-remision") {
+    resetearTabla();
+    mostrarFechaActual();
+    obtenerFolio();
+    
+    
   }
 }
 
@@ -46,6 +58,12 @@ function agregarFila() {
         <td><button type="button" onclick="eliminarFila(this)">❌</button></td>
     `;
   tabla.appendChild(nuevaFila);
+
+  const nuevoPrecio = nuevaFila.querySelector(".precio_unitario");
+  activarEnterEnPrecio(nuevoPrecio);
+  activarESCEnFila(nuevaFila);
+
+  nuevaFila.querySelector(".cantidad").focus();
 }
 function resetearTabla() {
   let tbody = document.getElementById("detalles").getElementsByTagName("tbody")[0];
@@ -385,22 +403,31 @@ async function cargarClientesEnSelect() {
       throw new Error(`Error en la solicitud: ${response.status}`);
 
     const data = await response.json();
-    //console.log("Clientes recibidos:", data);
 
-    const selectClientes = document.getElementById("cliente");
-    selectClientes.innerHTML = '<option value="">Venta General</option>'; // Resetear opciones
+    const clienteSelect = document.getElementById("cliente");
+    clienteSelect.innerHTML = ""; // limpiar el select
 
+    // Agregar opción inicial
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = "Venta General";
+    defaultOption.setAttribute("data_direccion", "Sin dirección");
+    clienteSelect.appendChild(defaultOption);
+
+    // Agregar clientes reales
     data.forEach((cliente) => {
       const option = document.createElement("option");
-      option.value = cliente.id_cliente; // Usar el ID como valor
-      option.textContent = cliente.nombre_cliente; // Mostrar solo el nombre
+      option.value = cliente.id_cliente;
+      option.textContent = cliente.nombre_cliente;
       option.setAttribute("data_direccion", cliente.domicilio_cliente);
-      selectClientes.appendChild(option);
+      clienteSelect.appendChild(option); // ← aquí estaba tu error
     });
+
   } catch (error) {
     console.error("Error al cargar los clientes en el select:", error);
   }
 }
+
 
 // Llamar a la función al cargar la página
 document.addEventListener("DOMContentLoaded", cargarClientesEnSelect);
@@ -413,33 +440,52 @@ document.getElementById("cliente").addEventListener("change", function () {
 });
 
 function mostrarFechaActual() {
-  const fechaElemento = document.getElementById("fecha_actual");
   const fecha = new Date();
+  const inputFecha = document.getElementById("fecha_actual");
 
-  //dandole formato a la fecha
-  const fechaFormateada = fecha.toLocaleDateString("es-MX", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-  fechaElemento.textContent = `Fecha: ${fechaFormateada}`;
+  const anio = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const dia = String(fecha.getDate()).padStart(2, "0");
+
+  // al input se le manda YYYY-MM-DD
+  inputFecha.value = `${anio}-${mes}-${dia}`;
 }
+
 
 document.addEventListener("DOMContentLoaded", mostrarFechaActual);
 
 /*vista previa del pdf a generar */
 function mostrarVistaPrevia() {
   // Obtener elementos del formulario
-  const fecha = document.getElementById("fecha_actual").textContent;
+  let fechaInput = document.getElementById("fecha_actual").value; // YYYY-MM-DD
+
+let fechaFormateada = "Sin fecha";
+
+if (fechaInput) {
+    const [anio, mes, dia] = fechaInput.split("-");
+    fechaFormateada = `${dia}/${mes}/${anio}`;
+}
+
+document.getElementById("vista-fecha").textContent = `Fecha: ${fechaFormateada}`;
+
   const folio = document.getElementById("folio_generar").textContent;
-  const cliente = document.getElementById("cliente").selectedOptions[0].text;
+  const clienteSelect = document.getElementById("cliente");
+
+let cliente = "Venta General"; // Valor por defecto
+let direccion_pdf = "Sin dirección";
+
+if (clienteSelect && clienteSelect.selectedOptions.length > 0) {
+    cliente = clienteSelect.selectedOptions[0].text || "Venta General";
+    direccion_pdf = document.getElementById("direccion_cliente").textContent || "Sin dirección";
+}
+
   const direccion_vista =
     document.getElementById("direccion_cliente").textContent;
   const total = document.getElementById("total").value;
 
   // Mostrar los datos en la vista previa
-  document.getElementById("vista-fecha").textContent = fecha;
-  document.getElementById("vista-folio").textContent = folio;
+  document.getElementById("vista-fecha").textContent = `Fecha: ${fechaFormateada}`;
+  document.getElementById("vista-folio").textContent =`Folio: ${folio}`;
   document.getElementById("vista-cliente").textContent = `Cliente: ${cliente}`;
   document.getElementById(
     "vista-domicilio"
@@ -471,182 +517,229 @@ function mostrarVistaPrevia() {
   document.getElementById("vista-previa").style.display = "block";
 }
 
-const expresiones = {
-  numbers: /^[0-9]{1,100}$/,
-};
-
-const form_registro = document.getElementById("remision-form");
-const cantidad = document.getElementById("cantidad");
-const descripcion = document.getElementById("descript");
-const precio = document.getElementById("precio");
-const errorCantidad = document.getElementById("error_cantidad");
-
-// Validación en tiempo real
-form_registro.addEventListener("keyup", (e) => {
-  validarCampo(cantidad, expresiones.numbers, errorCantidad);
-  validarCampo(precio, expresiones.numbers, errorCantidad);
-});
-
-// Validación al generar PDF
-document.getElementById("generar_pdf").addEventListener("click", async () => {
-  const validoCantidad = validarCampo(
-    cantidad,
-    expresiones.numbers,
-    errorCantidad
-  );
-  const validoPrecio = validarCampo(precio, expresiones.numbers, errorCantidad);
-
-  if (validoCantidad && validoPrecio) {
-    await generarPDF();
-  } else {
-    console.warn("Campos inválidos. No se puede generar el PDF.");
-  }
-});
-
-// Función reutilizable para validar campos
-function validarCampo(input, expresion, errorElement) {
-  if (expresion.test(input.value.trim())) {
-    input.style.color = "#000";
-    errorElement.style.display = "none";
-    return true;
-  } else {
-    input.style.color = "red";
-    errorElement.style.display = "block";
-    return false;
-  }
-}
-
 /*Generar el pdf */
 async function generarPDF() {
+  let esEdicion = window.modoEdicion === true;
+  let folio = esEdicion ? window.folioActual : document.getElementById("folio_generar").textContent;
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // Cargar imágenes
+  // VALIDAR CAMPOS ANTES DE GENERAR EL PDF
+let errores = [];
+let filas = document.querySelectorAll("#detalles tbody tr");
+
+// Verificar filas
+if (filas.length === 0) {
+  errores.push("Debe existir al menos una fila.");
+}
+
+filas.forEach((fila, index) => {
+  const cantidad = fila.querySelector(".cantidad").value.trim();
+  const descripcion = fila.querySelector(".descripcion").value.trim();
+  const precio = fila.querySelector(".precio_unitario").value.trim();
+  const subtotal = fila.querySelector(".subtotal").value.trim();
+
+  if (!cantidad || Number(cantidad) <= 0) {
+    errores.push(`Cantidad inválida en la fila ${index + 1}`);
+  }
+  if (!descripcion) {
+    errores.push(`La descripción está vacía en la fila ${index + 1}`);
+  }
+  if (!precio || Number(precio) <= 0) {
+    errores.push(`Precio inválido en la fila ${index + 1}`);
+  }
+  if (!subtotal || Number(subtotal) <= 0) {
+    errores.push(`Subtotal inválido en la fila ${index + 1}`);
+  }
+});
+
+// Validación del TOTAL
+const totalValor = document.getElementById("total").value;
+if (!totalValor || Number(totalValor) <= 0) {
+  errores.push("El total de la nota no puede ser 0.");
+}
+
+// Si hay errores, frenar la ejecución
+if (errores.length > 0) {
+  Swal.fire({
+    icon: "error",
+    title: "Campos inválidos",
+    html: errores.join("<br>"),
+  });
+  return;
+}
+
+
+  /* ----------------------------- CARGAR IMÁGENES ----------------------------- */
+
   const imgElement = document.getElementById("logo");
   const imgWatermark = document.getElementById("watermark");
 
   await Promise.all([
-    new Promise((resolve) => imgElement.complete ? resolve() : imgElement.onload = resolve),
-    new Promise((resolve) => imgWatermark.complete ? resolve() : imgWatermark.onload = resolve)
+    new Promise((resolve) => (imgElement.complete ? resolve() : (imgElement.onload = resolve))),
+    new Promise((resolve) => (imgWatermark.complete ? resolve() : (imgWatermark.onload = resolve))),
   ]);
 
-  // Convertir imagen de logo a base64
+  // Convertir logo a base64
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
+
   canvas.width = imgElement.naturalWidth;
   canvas.height = imgElement.naturalHeight;
   ctx.drawImage(imgElement, 0, 0);
+
   const imgData = canvas.toDataURL("image/jpeg");
 
-  // Función para rotar y hacer la marca de agua más opaca
-  function getWatermarkImage(image, angle) {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+  /* --------------------------- MARCA DE AGUA ROTADA --------------------------- */
 
-    // Ajustar tamaño del canvas para evitar recortes
+  function generarMarcaAgua(image, angle) {
+    const c = document.createElement("canvas");
+    const x = c.getContext("2d");
+
     const size = Math.max(image.naturalWidth, image.naturalHeight) * 1.5;
-    canvas.width = size;
-    canvas.height = size;
+    c.width = size;
+    c.height = size;
 
-    // Aplicar transparencia
-    ctx.globalAlpha = 0.1; // Opacidad de la marca de agua
+    x.globalAlpha = 0.12;
+    x.translate(size / 2, size / 2);
+    x.rotate((angle * Math.PI) / 180);
+    x.drawImage(image, -image.naturalWidth / 2, -image.naturalHeight / 2);
 
-    // Rotar la imagen en el centro del canvas
-    ctx.translate(size / 2, size / 2);
-    ctx.rotate((angle * Math.PI) / 180);
-    ctx.drawImage(image, -image.naturalWidth / 2, -image.naturalHeight / 2);
-
-    return canvas.toDataURL("image/png");
+    return c.toDataURL("image/png");
   }
 
-  // Obtener imagen de la marca de agua procesada
-  const watermarkData = getWatermarkImage(imgWatermark, -30);
+  const watermarkData = generarMarcaAgua(imgWatermark, -30);
 
   // Insertar marca de agua centrada
-  doc.addImage(watermarkData, "PNG", 30, 80, 150, 150, "", "FAST");
+  doc.addImage(watermarkData, "PNG", 25, 70, 160, 160, "", "FAST");
 
-  // Obtener datos
-  const folio = document.getElementById("folio_generar").textContent.replace("Folio: ", "");
-  const fecha = new Date();
-  const dia = String(fecha.getDate()).padStart(2, "0");
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-  const año = fecha.getFullYear();
-  const fechaformateada = `${dia}-${mes}-${año}`;
-  const cliente = document.getElementById("cliente").selectedOptions[0].text;
-  const domicilio_pdf = document.getElementById("direccion_cliente").textContent;
+  /* --------------------------------- DATOS ---------------------------------- */
+
+  const fechaActual = new Date();
+  const anio = fechaActual.getFullYear();
+  const mes = String(fechaActual.getMonth() + 1).padStart(2, "0");
+  const dia = String(fechaActual.getDate()).padStart(2, "0");
+
+  const fechaPDF = `${dia}-${mes}-${anio}`;
+  
+  const fechaBD = fechaActual.toISOString().slice(0, 19).replace("T", " ");
+
+  const clienteSelect = document.getElementById("cliente");
+
+let cliente = "Venta General"; // Valor por defecto
+let direccion_pdf = "Sin dirección";
+
+if (clienteSelect && clienteSelect.selectedOptions.length > 0) {
+    cliente = clienteSelect.selectedOptions[0].text || "Venta General";
+    direccion_pdf = document.getElementById("direccion_cliente").textContent || "Sin dirección";
+}
+
+  const domicilio_pdf = direccion_pdf;
+
   const total = document.getElementById("total").value;
 
-  // Obtener la tabla directamente desde #detalles
-  const data = Array.from(document.querySelectorAll("#detalles tbody tr")).map(
-    (tr) => {
-      const cantidad = tr.querySelector(".cantidad")?.value || "";
-      const descripcion = tr.querySelector(".descripcion")?.value || "";
-      const precio = tr.querySelector(".precio_unitario")?.value || "";
-      const subtotal = tr.querySelector(".subtotal")?.value || "";
-      return [cantidad, descripcion, precio, subtotal];
-    }
-  );
+  /* --------------------------- OBTENER TABLA --------------------------- */
 
-  // Función para imprimir los datos y tabla en el PDF
-  const imprimirBloque = () => {
+  const data = Array.from(document.querySelectorAll("#detalles tbody tr")).map((tr) => {
+    return [
+      tr.querySelector(".cantidad")?.value || "",
+      tr.querySelector(".descripcion")?.value || "",
+      tr.querySelector(".precio_unitario")?.value || "",
+      tr.querySelector(".subtotal")?.value || "",
+    ];
+  });
+
+  /* --------------------------- GENERAR PDF --------------------------- */
+
+  function imprimirPDF() {
     doc.addImage(imgData, "JPEG", 10, 10, 40, 15);
+
     doc.setFontSize(12);
-    doc.text(`Fecha: ${fechaformateada}`, 10, 30);
+    doc.text(`Fecha: ${fechaPDF}`, 10, 30);
     doc.text(`Folio: ${folio}`, 10, 35);
     doc.text(`Cliente: ${cliente}`, 10, 40);
     doc.text(`Dirección: ${domicilio_pdf}`, 10, 45);
 
-    // Generar tabla
     doc.autoTable({
-      headStyles: {
-        fillColor: [0, 0, 0], // Fondo negro para encabezados
-        textColor: [255, 255, 255], // Texto blanco en encabezados
-      },
-      startY: 50,
       head: [["Cantidad", "Descripción", "Precio Unitario", "Subtotal"]],
       body: data,
+      headStyles: {
+        fillColor: [0, 0, 0],
+        textColor: [255, 255, 255],
+      },
+      startY: 50,
     });
 
-    // Posicionar el total justo después de la tabla
-    const yFinalTabla = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(14);
-    doc.text(`Total: $${total}`, 10, yFinalTabla);
+    const yFinal = doc.lastAutoTable.finalY + 10;
 
-    // Agregar el footer más grande
-    const pageHeight = doc.internal.pageSize.height;
-    const footerY = pageHeight - 15;
+    doc.setFontSize(14);
+    doc.text(`Total: $${total}`, 10, yFinal);
+
+    const footerY = doc.internal.pageSize.height - 15;
     doc.setFontSize(12);
     doc.text("Tel: 222 434 2002 | Correo: manolindiaz76@gmail.com", 10, footerY);
-  };
+  }
 
-  // Llamar a la función para imprimir el contenido en el PDF
-  imprimirBloque();
+  imprimirPDF();
 
-  const pdfname = `nota_${folio}_${fechaformateada}.pdf`;
+  const pdfname = `nota_${folio}_${fechaPDF}.pdf`;
   doc.save(pdfname);
+  window.modoEdicion = false;
+  window.folioActual = null;
 
-  // Guardar en BD
+  /* ---------------------------- GUARDAR EN BD ---------------------------- */
+  // Construir el array de detalles
+const detalles = Array.from(document.querySelectorAll("#detalles tbody tr"))
+    .map(tr => {
+        const cantidad = tr.querySelector(".cantidad").value;
+        const descripcion = tr.querySelector(".descripcion").value;
+        const precio = tr.querySelector(".precio_unitario").value;
+        const subtotal = tr.querySelector(".subtotal").value;
+
+        return { cantidad, descripcion, precio, subtotal };
+    })
+    .filter(d => d.cantidad && d.descripcion && d.precio && d.subtotal); // Evitar filas vacías
+
+
   try {
-    const response = await fetch("http://localhost:3000/api/registros", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ folio, fecha, cliente, total, pdfname }),
-    });
+    let url = esEdicion
+    ? `http://localhost:3000/api/registros/${folio}`  // UPDATE
+    : "http://localhost:3000/api/registros";          // INSERT
+
+let metodo = esEdicion ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+    method: metodo,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+        folio,
+        fecha: fechaBD,
+        cliente,
+        total,
+        pdfname,
+        detalles
+    })
+});
 
     const result = await response.json();
+
     if (result.success) {
-      console.log("Registro guardado con éxito");
+      console.log("Registro guardado");
       document.getElementById("remision-form").reset();
       resetearTabla();
+      mostrarFechaActual();
       cargarRegistros();
       obtenerFolio();
     } else {
-      console.error("Error al guardar el registro:", result.error);
+      console.error("Error al guardar:", result.error);
     }
   } catch (error) {
-    console.error("Error en la solicitud:", error);
+    console.error("Error al enviar datos:", error);
   }
 }
+
+document.getElementById("generar_pdf").addEventListener("click", generarPDF);
 
 
 
@@ -683,3 +776,224 @@ async function cargarRegistros() {
     console.error("Error al cargar los registros:", error);
   }
 }
+
+/******CONSULTA PARA EDITAR EL REGISTRO***** */
+document.getElementById("btn_consultar_registro").addEventListener("click", buscarRegistro);
+
+async function buscarRegistro() {
+  
+
+
+  
+    const folio = document.getElementById("folio_edit").value.trim();
+
+    if (!folio) {
+        Swal.fire("Error", "Ingresa un folio para buscar.", "error");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/consultRegistEdit/${folio}`);
+
+        if (!response.ok) {
+            Swal.fire("No encontrado", "No existe un registro con ese folio.", "warning");
+            document.querySelector("input[name='folio_edit']").value = "";
+
+            return;
+        }
+
+        const registro = await response.json();
+        //console.log(registro);
+
+        // Mostrar datos
+        document.getElementById("edit-folio").textContent = `Folio: ${registro.id_registros}`;
+        document.getElementById("edit-cliente").textContent = `Cliente: ${registro.cliente_registro}`;
+        document.getElementById("edit-venta").textContent = `Venta: $${registro.total_registro}`;
+        document.getElementById("edit-file").textContent = `Nombre del archivo: ${registro.pdf_respaldo}`;
+
+        // Guardarlo globalmente para usarlo luego
+        window.registroActual = registro;
+
+        window.folioActual = folio;
+
+
+        // Mostrar el botón Editar
+        
+        document.getElementById("editar_registro").style.display = "block";
+
+    } catch (error) {
+        console.error("Error consultando registro:", error);
+        Swal.fire("Error", "No se pudo consultar el registro.", "error");
+    }
+    document.querySelector("input[name='folio_edit']").value = "";
+    
+}
+
+document.getElementById("editar_registro").addEventListener("click", async () => {
+    const folio = window.folioActual; // Lo guardaremos cuando se consulte
+    if (!folio) {
+        Swal.fire("Error", "Primero consulta un registro", "error");
+        return;
+    }
+
+    // Cambiar de sección automáticamente
+    showSection("crear-remision");
+
+    // Cargar datos principales
+    await cargarRegistroParaEditar(folio);
+
+    // Cargar detalles del registro
+    await cargarDetallesParaEditar(folio);
+
+    Swal.fire("Edición habilitada", "Ya puedes modificar la nota", "success");
+});
+
+async function cargarRegistroParaEditar(folio) {
+    const response = await fetch(`/api/consultar-registro/${folio}`);
+    const data = await response.json();
+    
+
+    const reg = data.registro;
+
+    // Seleccionar el cliente por TEXTO visible
+const select = document.getElementById("cliente");
+let clienteEncontrado = false;
+
+for (let op of select.options) {
+    if (op.textContent.trim() === reg.cliente_registro.trim()) {
+        select.value = op.value;
+        clienteEncontrado = true;
+
+        // Cargar dirección automáticamente
+        document.getElementById("direccion_cliente").textContent =
+            op.getAttribute("data_direccion") || "Sin dirección";
+        break;
+    }
+}
+
+// Si no existe en la lista, usar “Venta General”
+if (!clienteEncontrado) {
+    select.value = "";
+    document.getElementById("direccion_cliente").textContent = "Sin dirección";
+}
+
+
+    document.getElementById("total").value = reg.total_registro;
+
+    // Convertir fecha MySQL → YYYY-MM-DD (para input date)
+    const fecha = new Date(reg.fecha_registro);
+    const yyyy = fecha.getFullYear();
+    const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dd = String(fecha.getDate()).padStart(2, '0');
+
+    document.getElementById("fecha_actual").value = `${yyyy}-${mm}-${dd}`;
+
+    document.getElementById("folio_generar").textContent = folio;
+    
+}
+async function cargarDetallesParaEditar(folio) {
+    const response = await fetch(`/api/detalles/${folio}`);
+    const detalles = await response.json();
+
+    const tbody = document.querySelector("#detalles tbody");
+    tbody.innerHTML = ""; // limpiar todo
+
+    detalles.forEach(det => {
+        const fila = document.createElement("tr");
+
+        fila.innerHTML = `
+            <td><input type="number" class="cantidad" value="${det.cantidad}" oninput="calcularSubtotal(this)" required></td>
+            <td><input type="text" class="descripcion" value="${det.descripcion}" required></td>
+            <td><input type="number" class="precio_unitario" value="${det.precio_unitario}" oninput="calcularSubtotal(this)" required></td>
+            <td><input type="number" class="subtotal" value="${det.subtotal}" readonly></td>
+            <td><button type="button" onclick="eliminarFila(this)">❌</button></td>
+        `;
+
+        tbody.appendChild(fila);
+    });
+    calcularTotal();
+}
+
+// Permitir buscar al presionar ENTER en el input de Folio a buscar
+document
+  .querySelector("input[name='folio_edit']")
+  .addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault(); // Para evitar que recargue la página
+      document.querySelector(".edit_registro button.btn-add").click();
+    }
+  });
+
+function activarEnterEnPrecio(input) {
+  input.addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      agregarFila();
+    }
+  });
+}
+function activarESCEnFila(fila) {
+  fila.querySelectorAll("input").forEach(input => {
+    input.addEventListener("keydown", function(event) {
+      if (event.key === "Escape") {
+
+        const filas = Array.from(document.querySelectorAll("#detalles tbody tr"));
+        const index = filas.indexOf(fila);
+        const totalFilas = filas.length;
+
+        // Evitar borrar si solo queda una fila
+        if (totalFilas === 1) {
+          Swal.fire({
+            title: "Error",
+            text: "Debe haber al menos una fila!",
+            icon: "error",
+            confirmButtonText: "Ok"
+          });
+          return;
+        }
+
+        // Elegir a qué fila brincar después de eliminar
+        let filaDestino = null;
+
+        // Si existe fila siguiente → usar esa
+        if (filas[index + 1]) {
+          filaDestino = filas[index + 1];
+        } 
+        // Si no existe, usar la anterior
+        else if (filas[index - 1]) {
+          filaDestino = filas[index - 1];
+        }
+
+        // Eliminar la fila actual
+        fila.remove();
+
+        calcularTotal();
+
+        // Enfocar la columna CANTIDAD de la nueva fila seleccionada
+        if (filaDestino) {
+          const inputCantidad = filaDestino.querySelector(".cantidad");
+          if (inputCantidad) inputCantidad.focus();
+        }
+      }
+    });
+  });
+}
+
+
+document.getElementById("editar_registro").addEventListener("click", async () => {
+    if (!window.folioActual) {
+        Swal.fire("Error", "Primero consulta un registro", "error");
+        return;
+    }
+
+    window.modoEdicion = true; // 👈 ACTIVAMOS MODO EDICIÓN
+
+    showSection("crear-remision");
+
+    await cargarRegistroParaEditar(window.folioActual);
+    await cargarDetallesParaEditar(window.folioActual);
+
+    Swal.fire("Edición habilitada", "Ya puedes modificar la nota", "success");
+});
+
+

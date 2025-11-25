@@ -350,6 +350,20 @@ th {
   background: #ff5a5f;
 }
 
+.edit_registro{
+  width: 40%;
+  height: 300px;
+
+}
+.input_fecha{
+  width: 20%;
+}
+.edit_registro p{
+  padding: 0.2em;
+}
+.edit{
+  display: none;
+}
 @media (min-width: 600px) {
   .login {
     width: 70%;
@@ -381,3 +395,4 @@ th {
     width: 70%;
   }
 }
+
