@@ -1,6 +1,9 @@
+#Creando la base de datos
 CREATE DATABASE distribuidora_medica;
-
-
+#El usuario                                            CONTRASEÑA DEL .ENV
+CREATE USER 'onix'@'localhost' IDENTIFIED BY 'TU_CONTRASEÑA'; #OJO AQUI
+GRANT ALL PRIVILEGES ON distribuidora_medica.* TO 'onix'@'localhost';
+FLUSH PRIVILEGES;
 
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -8,6 +11,8 @@ CREATE TABLE usuarios (
     user VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL
 );
+INSERT INTO usuarios VALUES (1,'onix','onixburnedead','$2b$10$dvXXydbKwYiGy4XnIekuV.Opmt1y7218NtLFrGscSKTfBlSh.vrnC');
+INSERT INTO usuarios VALUES (2,'Hector Manuel Fernandez Díaz','hector','');
 
 CREATE TABLE clientes(
   id_cliente int NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -23,8 +28,6 @@ CREATE TABLE registros(
   pdf_respaldo VARCHAR(255) NOT NULL
 );
 
-//nueva tabla
-
 CREATE TABLE detalles_registro (
   id_detalle INT AUTO_INCREMENT PRIMARY KEY,
   id_registro INT NOT NULL,
@@ -34,11 +37,4 @@ CREATE TABLE detalles_registro (
   subtotal DECIMAL(10, 2) NOT NULL,
   FOREIGN KEY (id_registro) REFERENCES registros(id_registros) ON DELETE CASCADE
 );
-
-
-
-//usuarios
-
-INSERT INTO usuarios VALUES (1,'onix','onixburnedead','$2b$10$dvXXydbKwYiGy4XnIekuV.Opmt1y7218NtLFrGscSKTfBlSh.vrnC');
-INSERT INTO usuarios VALUES (2,'Hector Manuel Fernandez Díaz','hector','');
 
