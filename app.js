@@ -91,7 +91,7 @@ app.post('/auth', async (req, res) => {
         req.session.loggedin = true;
         req.session.user = usuario.usuario;
 
-        res.redirect('/'); // 🔥 Redirigir a index después de iniciar sesión correctamente
+        res.redirect('/'); // Redirigir a index después de iniciar sesión correctamente
     } catch (error) {
         console.error('Error en autenticación:', error);
         res.status(500).send('Error interno del servidor');
@@ -170,7 +170,6 @@ app.use('/api', consultregistrosRoutes);
 
 const actClientRoutes = require('./routes/actClientes');
 app.use('/api', actClientRoutes);
-
 
 const consultregistedit = require('./routes/consultRegistEdit');
 app.use('/api', consultregistedit);

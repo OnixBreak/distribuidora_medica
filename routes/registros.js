@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const conn = require('../database/db'); // Asegúrate de que apunte a tu conexión con MySQL
 const promise = conn.promise();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 function convertirFechaMySQL(fechaISO) {
     const fecha = new Date(fechaISO);
@@ -31,7 +34,7 @@ function convertirFechaMySQL(fechaISO) {
     }
 
     try {
-        // 1️⃣ Guardar REGISTRO principal
+        // Guardar REGISTRO principal
         const queryRegistro = `
             INSERT INTO registros (id_registros, fecha_registro, cliente_registro, total_registro, pdf_respaldo)
             VALUES (?, ?, ?, ?, ?)
@@ -244,6 +247,62 @@ router.put("/registros/:folio", async (req, res) => {
     } catch (error) {
         console.error("Error al actualizar registro:", error);
         res.status(500).json({ error: "Error interno del servidor" });
+    }
+});
+// ============================================================
+// CONFIGURACIÓN PARA GUARDAR PDFs
+// ============================================================
+
+const carpetaPDFs = path.join(__dirname, '../public/pdfs');
+
+// Crear la carpeta si no existe
+if (!fs.existsSync(carpetaPDFs)) {
+    fs.mkdirSync(carpetaPDFs, { recursive: true });
+}
+
+const storagePDF = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, carpetaPDFs);
+    },
+
+    filename: (req, file, cb) => {
+        cb(null, file.originalname);
+    }
+});
+
+const uploadPDF = multer({
+    storage: storagePDF
+});
+
+// ============================================================
+// GUARDAR PDF EN EL SERVIDOR
+// ============================================================
+
+router.post('/guardar-pdf', uploadPDF.single('pdf'), (req, res) => {
+
+    try {
+
+        if (!req.file) {
+            return res.status(400).json({
+                error: 'No se recibió ningún PDF'
+            });
+        }
+
+        console.log('PDF guardado en:', req.file.path);
+
+        res.json({
+            success: true,
+            message: 'PDF guardado correctamente',
+            filename: req.file.filename
+        });
+
+    } catch (error) {
+
+        console.error('Error al guardar PDF:', error);
+
+        res.status(500).json({
+            error: 'Error interno del servidor'
+        });
     }
 });
 

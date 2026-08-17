@@ -163,7 +163,7 @@ document
 
 async function obtenerFolio() {
   try {
-    const response = await fetch("http://localhost:3000/api/consulta-folio");
+    const response = await fetch("/api/consulta-folio");
     if (!response.ok) throw new Error("Error en la petición");
 
     const folio = await response.text(); // Recibe el número como texto
@@ -186,7 +186,7 @@ document
     const nombre_cliente = document.getElementById("nombre-cliente").value;
     const direccion_cliente = document.getElementById("direccion").value;
 
-    const response = await fetch("http://localhost:3000/api/agregar-cliente", {
+    const response = await fetch("/api/agregar-cliente", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nombre_cliente, direccion_cliente }),
@@ -215,7 +215,7 @@ document
 
 async function cargarClientes() {
   try {
-    const response = await fetch("http://localhost:3000/api/consulta-clientes");
+    const response = await fetch("/api/consulta-clientes");
     if (!response.ok)
       throw new Error(`Error en la solicitud: ${response.status}`);
 
@@ -266,7 +266,7 @@ async function actualizarCliente(event) {
 
   // Hacer la solicitud PUT con los datos correctos
   try {
-    const response = await fetch(`http://localhost:3000/api/actualizar-cliente/${id_cliente}`, {
+    const response = await fetch(`/api/actualizar-cliente/${id_cliente}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nombre_clienteAct, direccion_clienteAct })
@@ -359,7 +359,7 @@ async function eliminarCliente(id) {
   if (result.isConfirmed) {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/eliminar-cliente/${id}`,
+        `/api/eliminar-cliente/${id}`,
         {
           method: "DELETE",
         }
@@ -398,7 +398,7 @@ async function eliminarCliente(id) {
 
 async function cargarClientesEnSelect() {
   try {
-    const response = await fetch("http://localhost:3000/api/consulta-clientes");
+    const response = await fetch("/api/consulta-clientes");
     if (!response.ok)
       throw new Error(`Error en la solicitud: ${response.status}`);
 
@@ -684,6 +684,29 @@ if (clienteSelect && clienteSelect.selectedOptions.length > 0) {
   imprimirPDF();
 
   const pdfname = `nota_${folio}_${fechaPDF}.pdf`;
+  
+// Obtener el PDF como archivo
+const pdfBlob = doc.output("blob");
+
+// Preparar archivo para enviarlo al servidor
+const formData = new FormData();
+formData.append("pdf", pdfBlob, pdfname);
+
+// Guardar PDF en el servidor
+const pdfResponse = await fetch("/api/guardar-pdf", {
+    method: "POST",
+    body: formData
+});
+
+if (!pdfResponse.ok) {
+    throw new Error("No se pudo guardar el PDF en el servidor");
+}
+
+const pdfResultado = await pdfResponse.json();
+
+console.log("PDF guardado en servidor:", pdfResultado);
+
+// Descargar también el PDF en el dispositivo
   doc.save(pdfname);
   window.modoEdicion = false;
   window.folioActual = null;
@@ -704,8 +727,8 @@ const detalles = Array.from(document.querySelectorAll("#detalles tbody tr"))
 
   try {
     let url = esEdicion
-    ? `http://localhost:3000/api/registros/${folio}`  // UPDATE
-    : "http://localhost:3000/api/registros";          // INSERT
+    ? `/api/registros/${folio}`  // UPDATE
+    : "/api/registros";          // INSERT
 
 let metodo = esEdicion ? "PUT" : "POST";
 
@@ -746,7 +769,7 @@ document.getElementById("generar_pdf").addEventListener("click", generarPDF);
 
 async function cargarRegistros() {
   try {
-    const response = await fetch("http://localhost:3000/api/consulta-registros");
+    const response = await fetch("/api/consulta-registros");
     if (!response.ok) throw new Error("Error al obtener los registros");
 
     const registros = await response.json(); // Convertimos la respuesta en JSON
@@ -793,7 +816,7 @@ async function buscarRegistro() {
     }
 
     try {
-        const response = await fetch(`http://localhost:3000/api/consultRegistEdit/${folio}`);
+        const response = await fetch(`/api/consultRegistEdit/${folio}`);
 
         if (!response.ok) {
             Swal.fire("No encontrado", "No existe un registro con ese folio.", "warning");
