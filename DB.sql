@@ -18,7 +18,7 @@ CREATE TABLE clientes(
   id_cliente int NOT NULL PRIMARY KEY AUTO_INCREMENT,
   nombre_cliente varchar(100) NOT NULL,
   domicilio_cliente  varchar(100) DEFAULT NULL
-); 
+);
 
 CREATE TABLE registros(
   id_registros INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
