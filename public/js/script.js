@@ -36,6 +36,8 @@ document.getElementById("cerrar_sesion").addEventListener("click", () => {
     text: "¿Deseas cerrar sesión?",
     icon: "warning",
     showCancelButton: true,
+    confirmButtonColor:'#0066FF',
+    cancelButtonColor:'#FF2A3B',
     confirmButtonText: "Sí, cerrar sesión",
     cancelButtonText: "Cancelar",
   }).then((result) => {
@@ -85,6 +87,7 @@ function eliminarFila(boton) {
       title: "Error",
       text: "Debe haber al menos una fila!",
       icon: "error",
+      confirmButtonColor:'#0066FF',
       confirmButtonText: "Ok",
     });
   }
@@ -198,6 +201,7 @@ document
         title: "Éxito",
         text: "Cliente agregado con éxito",
         icon: "success",
+        confirmButtonColor:'#0066FF',
         confirmButtonText: "Aceptar",
       });
       document.getElementById("cliente-form").reset();
@@ -206,6 +210,7 @@ document
         title: "Error",
         text: "No se guardó el cliente" + data.error,
         icon: "error",
+        confirmButtonColor:'#FF2A3B',
         confirmButtonText: "Aceptar",
       });
     }
@@ -259,6 +264,7 @@ async function actualizarCliente(event) {
       title: "Error",
       text: "Todos los campos son obligatorios",
       icon: "error",
+      confirmButtonColor:'#FF2A3B',
       confirmButtonText: "Aceptar",
     });
     return;
@@ -286,6 +292,7 @@ async function actualizarCliente(event) {
       title: "Éxito",
       text: "Cliente actualizado con éxito",
       icon: "success",
+      confirmButtonColor:'#0066FF',
       confirmButtonText: "Aceptar",
     });
 
@@ -303,6 +310,7 @@ async function actualizarCliente(event) {
       title: "Error",
       text: "Ocurrió un error al actualizar el cliente",
       icon: "error",
+      confirmButtonColor:'#FF2A3B',
       confirmButtonText: "Aceptar",
     });
   }
@@ -352,7 +360,9 @@ async function eliminarCliente(id) {
     text: "¿Deseas eliminar al cliente?",
     icon: "warning",
     showCancelButton: true,
+    confirmButtonColor:'#0066FF',
     confirmButtonText: "Eliminar",
+    cancelButtonColor:'#FF2A3B',
     cancelButtonText: "Cancelar",
   });
 
@@ -376,6 +386,7 @@ async function eliminarCliente(id) {
         title: "Éxito",
         text: "Cliente eliminado con éxito",
         icon: "success",
+        confirmButtonColor:'#0066FF',
         confirmButtonText: "Aceptar",
       });
 
@@ -386,6 +397,7 @@ async function eliminarCliente(id) {
         title: "Error",
         text: "No se pudo eliminar el cliente",
         icon: "error",
+        confirmButtonColor:'#FF2A3B',
         confirmButtonText: "Aceptar",
       });
     }
@@ -653,13 +665,13 @@ if (clienteSelect && clienteSelect.selectedOptions.length > 0) {
   /* --------------------------- GENERAR PDF --------------------------- */
 
   function imprimirPDF() {
-    doc.addImage(imgData, "JPEG", 10, 10, 40, 15);
+    doc.addImage(imgData, "JPEG", 10, 10, 57, 45);
 
     doc.setFontSize(12);
-    doc.text(`Fecha: ${fechaPDF}`, 10, 30);
-    doc.text(`Folio: ${folio}`, 10, 35);
-    doc.text(`Cliente: ${cliente}`, 10, 40);
-    doc.text(`Dirección: ${domicilio_pdf}`, 10, 45);
+    doc.text(`Fecha: ${fechaPDF}`, 10, 60);
+    doc.text(`Folio: ${folio}`, 10, 65);
+    doc.text(`Cliente: ${cliente}`, 10, 70);
+    doc.text(`Dirección: ${domicilio_pdf}`, 10, 75);
 
     doc.autoTable({
       head: [["Cantidad", "Descripción", "Precio Unitario", "Subtotal"]],
@@ -668,7 +680,7 @@ if (clienteSelect && clienteSelect.selectedOptions.length > 0) {
         fillColor: [0, 0, 0],
         textColor: [255, 255, 255],
       },
-      startY: 50,
+      startY: 80,
     });
 
     const yFinal = doc.lastAutoTable.finalY + 10;
@@ -970,6 +982,7 @@ function activarESCEnFila(fila) {
             title: "Error",
             text: "Debe haber al menos una fila!",
             icon: "error",
+            confirmButtonColor:'#0066FF',
             confirmButtonText: "Ok"
           });
           return;

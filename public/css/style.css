@@ -33,7 +33,7 @@ body {
 }
 /*Login*/
 .login img {
-  width: 200px;
+  width: 170px;
   margin-bottom: 1em;
 }
 
@@ -72,7 +72,8 @@ body {
   top: -15px;
 }
 .img_index {
-  width: 200px;
+  width: 170px;
+  height: 140px;
   margin: 0 auto;
 }
 
@@ -99,7 +100,7 @@ body {
 
 .login input[type="submit"] {
   border: none;
-  background-color: #177e89;
+  background-color: #0066FF;
   width: 95%;
   height: 3.5em;
   font-size: 1em;
@@ -111,7 +112,7 @@ body {
   transition: all 500ms;
 }
 .login input[type="submit"]:hover {
-  background-color: #084c61;
+  background-color: #0056d8;
   color: #fff;
   transform: scale(1.1);
 }
@@ -136,7 +137,7 @@ footer {
 .banner {
   width: 100%;
   height: 4em;
-  background-color: #084c61;
+  background-color: #0066FF;
   position: fixed;
   top: 0;
 }
@@ -155,30 +156,30 @@ footer {
   cursor: pointer;
 }
 .banner button:hover {
-  background-color: #177e89;
+  background-color: #0056d8;
 }
 .select {
   width: 90%;
   cursor: pointer;
   height: 2.5em;
   padding: 5px;
-  background-color: #177e89;
-  color: #f3f3f3;
+  background-color: #0066FF;
+  color: #FFF;
   font-weight: bold;
   border: 1px solid #87bdcd;
   transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 .select option {
-  background-color: #bfd7ea;
-  color: #000;
+  background-color: #0066FF;
+  color: #FFF;
   height: 2em;
 }
 .select option:focus {
-  background-color: #177e89;
+  background-color: #0056db;
 }
 .select:hover {
-  background-color: #177e89;
-  border-color: #6b6d6f;
+  background-color:#0056d8;
+  border-color: #0056db;
 }
 
 /* Estilo para el ícono del desplegable */
@@ -191,7 +192,7 @@ footer {
 
 /* Cambiar el color de fondo cuando el select está enfocado */
 .select:focus {
-  background-color: #177e89;
+  background-color: #0066FF;
   color: #fff;
 }
 
@@ -218,7 +219,7 @@ footer {
 }
 
 .tab:hover {
-  background: #0056b3;
+  background: #0056d8;
   border-radius: 5px;
 }
 
@@ -282,7 +283,7 @@ th {
   color: white;
 }
 .btn-quit {
-  background-color: #b80f22;
+  background-color: #FF2A3B;
   margin-top: 10px;
   padding: 5px;
   color: #fff;
@@ -293,7 +294,7 @@ th {
   transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 .btn-quit:hover {
-  background-color: #721c24;
+  background-color: #FA1326;
   font-weight: bold;
 }
 .btn-actualizarCliente{
@@ -304,13 +305,13 @@ th {
   cursor: pointer;
   border-radius: 2px;
   transition: border-color 0.3s ease, background-color 0.3s ease;
-  background: #177e89;
+  background: #0066FF;
   color: white;
   cursor: pointer;
 
 }
 .btn-actualizarCliente:hover{
-  background-color:#084c61;
+  background-color:#0056d8;
   font-weight: bold;
 }
 
@@ -333,21 +334,21 @@ th {
 }
 
 .btn-add {
-  background: #177e89;
+  background: #0066FF;
   color: white;
 }
 
 .btn-add:hover {
-  background: #084c61;
+  background: #0056d8;
 }
 
 .btn-save {
-  background: #c81d25;
+  background: #FF2A3B;
   color: white;
 }
 
 .btn-save:hover {
-  background: #ff5a5f;
+  background: #FA1326;
 }
 
 .edit_registro{
