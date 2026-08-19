@@ -178,22 +178,3 @@ app.use('/api', consultregistedit);
 app.listen(3000, () => {
     console.log('Servidor Activo...');
 });
-
-
-
-
-/*
-esto lo estoy usando para hashear las claves de los usuarios
-
-const bcryptjs = require('bcryptjs');
-
-async function generarHash() {
-    const passwordPlano = 'system15'; // Cambia esto por la contraseña real
-    const hash = await bcryptjs.hash(passwordPlano, 10);
-    console.log('Hash generado:', hash);
-}
-
-generarHash();
-
-
-*/
