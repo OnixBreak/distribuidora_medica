@@ -628,14 +628,23 @@ if (errores.length > 0) {
 
   /* --------------------------------- DATOS ---------------------------------- */
 
-  const fechaActual = new Date();
-  const anio = fechaActual.getFullYear();
-  const mes = String(fechaActual.getMonth() + 1).padStart(2, "0");
-  const dia = String(fechaActual.getDate()).padStart(2, "0");
+  const fechaInput = document.getElementById("fecha_actual").value;
 
-  const fechaPDF = `${dia}-${mes}-${anio}`;
-  
-  const fechaBD = fechaActual.toISOString().slice(0, 19).replace("T", " ");
+if (!fechaInput) {
+  Swal.fire({
+    icon: "error",
+    title: "Fecha inválida",
+    text: "Debes seleccionar una fecha.",
+  });
+  return;
+}
+
+const [anio, mes, dia] = fechaInput.split("-");
+
+const fechaPDF = `${dia}-${mes}-${anio}`;
+
+// Fecha para MySQL
+const fechaBD = `${fechaInput} 00:00:00`;
 
   const clienteSelect = document.getElementById("cliente");
 
