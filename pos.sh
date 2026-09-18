@@ -12,7 +12,8 @@ if pgrep mariadb > /dev/null; then
     echo "MariaDB ya está activo"
 
  else
-    echo "iniciando mariaDB..."
+    echo "Iniciando maria db..."
+date >> ~/apk_arranque.txt
     mysqld_safe &
     fi
 echo "Esperando MariaDB..."
