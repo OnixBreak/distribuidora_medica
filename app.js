@@ -13,15 +13,24 @@ dotenv.config({ path: './env/.env' });
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-app.use('/resources', express.static('public'));
 app.use('/resources', express.static(__dirname + '/public'));
 
 app.set('view engine', 'ejs');
 
+if (!process.env.SESSION_SECRET) {
+    throw new Error('Falta configurar SESSION_SECRET en env/.env');
+}
+
 app.use(session({
-    secret: 'secret',
-    resave: true,
-    saveUninitialized: true
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 8
+    }
 }));
 
 const connection = mysql.createConnection({
@@ -44,15 +53,22 @@ function verificarSesion(req, res, next) {
     }
 }
 
+function verificarSesionAPI(req, res, next) {
+    if (req.session && req.session.loggedin) {
+        return next();
+    }
+
+    return res.status(401).json({
+        error: 'Sesión expirada o no autenticada'
+    });
+}
+
 const query = util.promisify(connection.query).bind(connection);
 
 app.get('/', verificarSesion, (req, res) => {
     res.render('index', { user: req.session.user }); // Pasar usuario a la vista
 });
 
-app.get('/', (req, res) => {
-    res.render('index');
-});
 
 app.get('/login', (req, res) => {
     if (req.session.loggedin) {
@@ -99,53 +115,13 @@ app.post('/auth', async (req, res) => {
 });
 
 
-app.post('/auth', async (req, res) => {
-    let { user, password } = req.body;
-    user = user.trim();
-    password = password.trim();
-
-    if (!user || !password) {
-        return res.status(400).send('Faltan datos');
-    }
-
-    try {
-        const results = await query('SELECT * FROM usuarios WHERE user = ?', [user]);
-
-        if (results.length === 0) {
-            console.log(`Usuario no encontrado: ${user}`);
-            return res.status(401).send('USUARIO INCORRECTO');
-        }
-
-        const usuario = results[0];
-
-        if (!usuario.password) {
-            console.error('Error: La propiedad "password" no existe en la base de datos');
-            return res.status(500).send('Error interno del servidor');
-        }
-
-        console.log("Comparando contraseña ingresada con hash en la DB");
-        const passwordMatch = await bcryptjs.compare(password, usuario.password);
-
-        if (!passwordMatch) {
-            console.log("Contraseña incorrecta para usuario:", user);
-            return res.status(401).send('PASSWORD INCORRECTO');
-        }
-
-        req.session.loggedin = true;
-        req.session.user = user;
-
-        res.send('Autenticación exitosa');
-    } catch (error) {
-        console.error('Error en autenticación:', error);
-        res.status(500).send('Error interno del servidor');
-    }
-});
-
 app.use(express.json());
 app.use(cors());
 
 const logoutRoutes = require('./routes/logout');
 app.use('/api', logoutRoutes);
+
+app.use('/api', verificarSesionAPI);
 
 const clientesRoutes = require('./routes/clientes');
 app.use('/api', clientesRoutes);
